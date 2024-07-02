@@ -28,7 +28,14 @@ namespace GitLabApiClient
         /// </returns>
         public async Task<Upload> UploadFile(ProjectId projectId, CreateUploadRequest uploadRequest)
         {
-            return await _httpFacade.PostFile($"projects/{projectId}/uploads", uploadRequest);
+            if (uploadRequest.IsAvatar)
+            {
+                return await _httpFacade.PutFile($"projects/{projectId}", uploadRequest);
+            }
+            else
+            {
+                return await _httpFacade.PostFile($"projects/{projectId}/uploads", uploadRequest);
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ namespace GitLabApiClient.Models.Uploads.Requests
         {
             Stream = stream;
             FileName = fileName;
+            IsAvatar = false;
         }
 
         /// <summary>
@@ -27,5 +28,10 @@ namespace GitLabApiClient.Models.Uploads.Requests
         /// The name of the file being uploaded
         /// </summary>
         public string FileName { get; }
+
+        /// <summary>
+        /// Whether the upload is a project avatar
+        /// </summary>
+        public bool IsAvatar { get; set; }
     }
 }

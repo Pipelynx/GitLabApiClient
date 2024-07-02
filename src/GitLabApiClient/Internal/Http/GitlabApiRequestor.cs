@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using GitLabApiClient.Internal.Http.Serialization;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Uploads.Requests;
 using GitLabApiClient.Models.Uploads.Responses;
 
@@ -19,6 +20,22 @@ namespace GitLabApiClient.Internal.Http
         {
             _client = client;
             _jsonSerializer = jsonSerializer;
+        }
+
+        public async Task Delete(string url)
+        {
+            var responseMessage = await _client.DeleteAsync(url);
+            await EnsureSuccessStatusCode(responseMessage);
+        }
+
+        public async Task Delete(string url, object data)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, url)
+            {
+                Content = SerializeToString(data)
+            };
+            var responseMessage = await _client.SendAsync(request);
+            await EnsureSuccessStatusCode(responseMessage);
         }
 
         public async Task<T> Get<T>(string url)
@@ -36,6 +53,13 @@ namespace GitLabApiClient.Internal.Http
             {
                 await inputStream.CopyToAsync(outputStream);
             }
+        }
+
+        public async Task<Tuple<T, HttpResponseHeaders>> GetWithHeaders<T>(string url)
+        {
+            var responseMessage = await _client.GetAsync(url);
+            await EnsureSuccessStatusCode(responseMessage);
+            return Tuple.Create(await ReadResponse<T>(responseMessage), responseMessage.Headers);
         }
 
         public async Task<T> Post<T>(string url, object data = null)
@@ -63,7 +87,7 @@ namespace GitLabApiClient.Internal.Http
             using (var uploadContent =
                 new MultipartFormDataContent($"Upload----{DateTime.Now.Ticks}"))
             {
-                uploadContent.Add(new StreamContent(uploadRequest.Stream), "file", uploadRequest.FileName);
+                uploadContent.Add(new StreamContent(uploadRequest.Stream), uploadRequest.IsAvatar ? "avatar" : "file", uploadRequest.FileName);
 
                 if (keyValues != null)
                 {
@@ -95,27 +119,26 @@ namespace GitLabApiClient.Internal.Http
             await EnsureSuccessStatusCode(responseMessage);
         }
 
-        public async Task Delete(string url)
+        public async Task<Upload> PutFile(string url, CreateUploadRequest uploadRequest)
         {
-            var responseMessage = await _client.DeleteAsync(url);
-            await EnsureSuccessStatusCode(responseMessage);
-        }
-
-        public async Task Delete(string url, object data)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Delete, url)
+            using (var uploadContent =
+                new MultipartFormDataContent($"Avatar----{DateTime.Now.Ticks}"))
             {
-                Content = SerializeToString(data)
-            };
-            var responseMessage = await _client.SendAsync(request);
-            await EnsureSuccessStatusCode(responseMessage);
-        }
+                if (uploadRequest.Stream == null)
+                {
+                    uploadContent.Add(new StringContent(string.Empty), "avatar");
+                }
+                else
+                {
+                    uploadContent.Add(new StreamContent(uploadRequest.Stream), "avatar", uploadRequest.FileName);
+                }
 
-        public async Task<Tuple<T, HttpResponseHeaders>> GetWithHeaders<T>(string url)
-        {
-            var responseMessage = await _client.GetAsync(url);
-            await EnsureSuccessStatusCode(responseMessage);
-            return Tuple.Create(await ReadResponse<T>(responseMessage), responseMessage.Headers);
+                var responseMessage = await _client.PutAsync(url, uploadContent);
+                await EnsureSuccessStatusCode(responseMessage);
+
+                var project = await ReadResponse<Project>(responseMessage);
+                return new Upload(null, project.AvatarUrl, null);
+            }
         }
 
         private static async Task EnsureSuccessStatusCode(HttpResponseMessage responseMessage)

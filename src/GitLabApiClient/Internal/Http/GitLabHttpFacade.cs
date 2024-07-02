@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using GitLabApiClient.Internal.Http.Serialization;
 using GitLabApiClient.Models.Oauth.Requests;
 using GitLabApiClient.Models.Oauth.Responses;
+using GitLabApiClient.Models.Projects.Responses;
 using GitLabApiClient.Models.Uploads.Requests;
 using GitLabApiClient.Models.Uploads.Responses;
 
@@ -88,6 +89,9 @@ namespace GitLabApiClient.Internal.Http
 
         public Task Put(string uri, object data) =>
             _requestor.Put(uri, data);
+
+        public Task<Upload> PutFile(string uri, CreateUploadRequest uploadRequest) =>
+            _requestor.PutFile(uri, uploadRequest);
 
         public Task Delete(string uri) =>
             _requestor.Delete(uri);
