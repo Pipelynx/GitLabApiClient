@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GitLabApiClient.Internal.Http.Serialization;
 using GitLabApiClient.Internal.Utilities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace GitLabApiClient.Models.Issues.Requests
 {
@@ -50,6 +51,13 @@ namespace GitLabApiClient.Models.Issues.Requests
         /// </summary>
         [JsonProperty("milestone_id")]
         public int? MilestoneId { get; set; }
+
+        /// <summary>
+        /// The type of issue. One of issue, incident, test_case or task. Default is issue.
+        /// </summary>
+        [JsonProperty("issue_type")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public IssueType? IssueType { get; set; }
 
         /// <summary>
         /// Label names for an issue.
