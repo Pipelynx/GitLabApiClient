@@ -64,5 +64,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\martin.fellner\Documents\Gitlab\ddlcommander\DDLWPF\DDLView\DDLData\GitLabApiClient\src\GitLabApiClient\.editorconfig" />
+  </ItemGroup>
 
 </Project>
